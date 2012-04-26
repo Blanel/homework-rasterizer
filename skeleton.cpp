@@ -46,7 +46,7 @@ int main( int argc, char* argv[] )
     
 	while( NoQuitMessageSDL() )
 	{
-		// Update();
+		Update();
 		Draw();
 	}
     
@@ -106,7 +106,7 @@ void Draw()
 	if( SDL_MUSTLOCK(screen) )
 		SDL_LockSurface(screen);
 	
-	for( int i=0; i<triangles.size(); ++i )
+	for( int i=0; i<triangles.size(); i++ )
 	{
 		vector<vec3> vertices(3);
         
@@ -136,7 +136,7 @@ void Interpolate( ivec2 a, ivec2 b, vector<ivec2>& result )
     int N = result.size();
     vec2 step = vec2(b-a) / float(max(N-1,1));
     vec2 current( a );
-    for( int i=0; i<N; ++i )
+    for( int i=0; i<N; i++ )
     {
         result[i] = current;
         current += step;
@@ -152,7 +152,7 @@ void ComputePolygonRows(
     
     int V = vertexPixels.size();
     int max = 0;
-    int min = 10000;
+    int min = 1000;
     int ROWS = 0;
     
     for (int i = 0; i < V; i++)
@@ -174,7 +174,7 @@ void ComputePolygonRows(
     // to some really large value and the x-coordinates
     // in rightPixels to some really small value.
     
-    for( int i=0; i < ROWS; ++i )
+    for( int i=0; i < ROWS; i++ )
     {
         leftPixels[i].x = +numeric_limits<int>::max();
         rightPixels[i].x = -numeric_limits<int>::max();
@@ -187,8 +187,8 @@ void ComputePolygonRows(
     
     // Loop over all vertices and draw the edge from it to the next vertex:
     
-    vector<ivec2> result;
-    for( int i=0; i<V; ++i )
+    vector<ivec2> result(0);
+    for( int i=0; i<V; i++ )
     {
         int j = (i+1)%V;                    // The next vertex
         vector<ivec2> resultVertex(ROWS);
@@ -204,16 +204,13 @@ void ComputePolygonRows(
         rightPixels[row].y = result[i].y;
         rightPixels[row].x = result[i].x > rightPixels[row].x ? result[i].x : rightPixels[row].x;
     }
-    
-    
-    
 } 
 void DrawRows(
               const vector<ivec2>& leftPixels,
               const vector<ivec2>& rightPixels )
 {
     for (int i = 0; i < leftPixels.size(); i++) {
-        vector<ivec2> rowPixels(rightPixels[i].x-leftPixels[i]);
+        vector<ivec2> rowPixels(rightPixels[i].x-leftPixels[i].x+1);
         Interpolate(leftPixels[i], rightPixels[i], rowPixels);
         for (int j = 0; j < rowPixels.size(); j++) {
             PutPixelSDL( screen, rowPixels[j].x, rowPixels[j].y, color );
