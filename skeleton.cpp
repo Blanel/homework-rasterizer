@@ -21,6 +21,8 @@ vector<Triangle> triangles;
 int f = 250;
 vec3 camPosition(0,0,-2);
 vec3 color;
+vector<ivec2> leftPixels;
+vector<ivec2> rightPixels;
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -118,6 +120,8 @@ void Draw()
 		// Add drawing
         
         DrawPolygon( vertices );
+        
+        vertices.clear();
     }
 	
 	if ( SDL_MUSTLOCK(screen) )
@@ -212,7 +216,7 @@ void DrawRows(
     for (int i = 0; i < leftPixels.size(); i++) {
         vector<ivec2> rowPixels(rightPixels[i].x-leftPixels[i].x+1);
         Interpolate(leftPixels[i], rightPixels[i], rowPixels);
-        for (int j = 0; j < rowPixels.size(); j++) {
+        for( int j = 0; j < rowPixels.size(); j++) {
             PutPixelSDL( screen, rowPixels[j].x, rowPixels[j].y, color );
         }
     }
@@ -221,12 +225,13 @@ void DrawPolygon( const vector<vec3>& vertices )
 {
     int V = vertices.size();
     vector<ivec2> vertexPixels( V );
-    for( int j=0; j<V; ++j )
+    for( int j=0; j<V; j++ )
         VertexShader( vertices[j], vertexPixels[j] );
     
-    vector<ivec2> leftPixels;
-    vector<ivec2> rightPixels;
     ComputePolygonRows( vertexPixels, leftPixels, rightPixels );
     DrawRows( leftPixels, rightPixels );
+        
+    leftPixels.clear();
+    rightPixels.clear();
 }
 
