@@ -24,6 +24,12 @@ vec3 color;
 vector<ivec2> leftPixels;
 vector<ivec2> rightPixels;
 
+
+mat3 rot;
+float thetaX = 0;
+float thetaY = 0;
+float thetaZ = 0;
+
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
@@ -39,6 +45,7 @@ void DrawRows(
               const vector<ivec2>& leftPixels,
               const vector<ivec2>& rightPixels );
 void DrawPolygon( const vector<vec3>& vertices );
+void Rotate();
 
 int main( int argc, char* argv[] )
 {
@@ -72,10 +79,14 @@ void Update()
 		;
     
 	if( keystate[SDLK_RIGHT] )
-		;
+        {
+            thetaY -= 0.01;
+        }
     
 	if( keystate[SDLK_LEFT] )
-		;
+        {
+            thetaY += 0.01;
+        }
     
 	if( keystate[SDLK_RSHIFT] )
 		;
@@ -100,6 +111,19 @@ void Update()
     
 	if( keystate[SDLK_q] )
 		;
+        Rotate();
+}
+void Rotate()
+{
+    rot[0][0] = cos(thetaY)*cos(thetaZ);
+    rot[1][0] = sin(thetaX)*sin(thetaY)*cos(thetaZ)-cos(thetaX)*sin(thetaZ);
+    rot[2][0] = sin(thetaX)*sin(thetaZ)+cos(thetaX)*sin(thetaY)*cos(thetaZ);
+    rot[0][1] = cos(thetaY)*sin(thetaZ);
+    rot[1][1] = cos(thetaX)*cos(thetaZ)+sin(thetaX)*sin(thetaY)*sin(thetaZ);
+    rot[2][1] = cos(thetaX)*sin(thetaY)*sin(thetaZ)-sin(thetaX)*cos(thetaZ);
+    rot[0][2] = -sin(thetaY);
+    rot[1][2] = sin(thetaX)*cos(thetaY);
+    rot[2][2] = cos(thetaX)*cos(thetaY);
 }
 void Draw()
 {
@@ -132,6 +156,7 @@ void Draw()
 void VertexShader( const vec3& v, ivec2& p )
 {
     vec3 vLocal = v-camPosition;
+    vLocal = rot * vLocal;
     p.x = f*(vLocal.x/(vLocal.z))+SCREEN_WIDTH/2;
     p.y = f*(vLocal.y/(vLocal.z))+SCREEN_HEIGHT/2;
 }
@@ -169,8 +194,7 @@ void ComputePolygonRows(
     
     // 2. Resize leftPixels and rightPixels
     // so that they have an element for each row.
-    
-    leftPixels.resize(ROWS);
+    leftPixels.resize(ROWS);    // CAUSES SEFAULT
     rightPixels.resize(ROWS);
     
     
@@ -195,7 +219,7 @@ void ComputePolygonRows(
     for( int i=0; i<V; i++ )
     {
         int j = (i+1)%V;                    // The next vertex
-        vector<ivec2> resultVertex(ROWS);
+        vector<ivec2> resultVertex(ROWS);   // CAUSES SEGFAULT
         Interpolate(vertexPixels[i], vertexPixels[j], resultVertex);
         result.insert(result.end(), resultVertex.begin(), resultVertex.end());
     }
