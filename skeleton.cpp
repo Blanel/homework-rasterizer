@@ -21,8 +21,8 @@ vector<Triangle> triangles;
 int f = 250;
 vec3 camPosition(0,0,-2);
 vec3 color;
-vector<ivec2> leftPixels;
-vector<ivec2> rightPixels;
+vector<ivec2> leftPixels(2000, ivec2(0,0));
+vector<ivec2> rightPixels(2000, ivec2(0,0));
 
 
 mat3 rot;
@@ -190,7 +190,9 @@ void ComputePolygonRows(
         min = vertexPixels[i].y < min ? vertexPixels[i].y : min;
         ROWS = max-min+1;
     }
-    
+
+    //ROWS = ROWS < 0 ? -ROWS : ROWS;
+    //cerr<<ROWS<<"\n";
     
     // 2. Resize leftPixels and rightPixels
     // so that they have an element for each row.
