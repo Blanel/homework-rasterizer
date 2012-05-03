@@ -73,10 +73,14 @@ void Update()
 	Uint8* keystate = SDL_GetKeyState(0);
     
 	if( keystate[SDLK_UP] )
-		;
+        {
+            thetaX -= 0.01;
+        }
     
 	if( keystate[SDLK_DOWN] )
-		;
+        {
+            thetaX += 0.01;
+        }
     
 	if( keystate[SDLK_RIGHT] )
         {
