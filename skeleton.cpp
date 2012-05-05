@@ -5,7 +5,6 @@
 #include "TestModel.h"
 
 using namespace std;
-using glm::vec4;
 using glm::vec3;
 using glm::vec2;
 using glm::mat3;
@@ -48,12 +47,6 @@ vec3 color;
 vec3 lightPos( 0, -0.5, -0.7 );
 vec3 lightPower = 16.f * vec3( 1, 1, 1 );
 vec3 indirectLightPowerPerArea = 0.5f*vec3( 1, 1, 1 );
-
-// Transformation
-mat3 rot;
-float thetaX = 0;
-float thetaY = 0;
-float thetaZ = 0;
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
@@ -102,55 +95,20 @@ void Update()
 	Uint8* keystate = SDL_GetKeyState(0);
     
 	if( keystate[SDLK_UP] )
-        {
-            //thetaX -= 0.01;
             camPosition.z += 0.05;
-            
-        }
     
 	if( keystate[SDLK_DOWN] )
-        {
-            //thetaX += 0.01;
-            camPosition.z -= 0.05;
-        }
+    camPosition.z -= 0.05;
     
 	if( keystate[SDLK_RIGHT] )
-        {
-            thetaY -= 0.01;
             camPosition.x += 0.05;
-        }
     
 	if( keystate[SDLK_LEFT] )
-        {
-            //thetaY += 0.01;
             camPosition.x -= 0.05;
-        }
     
 	if( keystate[SDLK_RSHIFT] )
 		;
     
-	if( keystate[SDLK_RCTRL] )
-		;
-    
-	/*if( keystate[SDLK_w] )
-        {
-            camPosition += rot*vec3(0,0,0.01);
-        }
-    
-	if( keystate[SDLK_s] )
-        {
-            camPosition += rot*vec3(0,0,0.01);
-        }
-    
-	if( keystate[SDLK_d] )
-        {
-            camPosition += rot*vec3(0.01,0,0);
-        }
-    
-	if( keystate[SDLK_a] )
-        {
-            camPosition -= rot*vec3(0.01,0,0);
-        } */
     // Light movement
     
     if( keystate[SDLK_w] )
@@ -170,13 +128,10 @@ void Update()
     
 	if( keystate[SDLK_q] )
 		;        
-    
-    Rotate();
-
 }
 void Rotate()
 {
-    rot[0][0] = cos(thetaY)*cos(thetaZ);
+    /*rot[0][0] = cos(thetaY)*cos(thetaZ);
     rot[1][0] = sin(thetaX)*sin(thetaY)*cos(thetaZ)-cos(thetaX)*sin(thetaZ);
     rot[2][0] = sin(thetaX)*sin(thetaZ)+cos(thetaX)*sin(thetaY)*cos(thetaZ);
     rot[0][1] = cos(thetaY)*sin(thetaZ);
@@ -184,7 +139,7 @@ void Rotate()
     rot[2][1] = cos(thetaX)*sin(thetaY)*sin(thetaZ)-sin(thetaX)*cos(thetaZ);
     rot[0][2] = -sin(thetaY);
     rot[1][2] = sin(thetaX)*cos(thetaY);
-    rot[2][2] = cos(thetaX)*cos(thetaY);
+    rot[2][2] = cos(thetaX)*cos(thetaY); */
 }
 void Draw()
 {
@@ -206,9 +161,6 @@ void Draw()
         vertices[1].position = triangles[i].v1;
         vertices[2].position = triangles[i].v2;
 
-        
-        // vertices[j].reflectance = 1;
-
         color = triangles[i].color;
         currentNormal = triangles[i].normal;
         
@@ -226,9 +178,7 @@ void VertexShader( const Vertex& v, Pixel& p )
 {
     vec3 vLocal = v.position-camPosition;
     
-    // vLocal = rot * vLocal;
-    
-    p.zinv = 1/vLocal.z;
+    p.zinv = 1/abs(vLocal.z);
     p.x = (f * vLocal.x * p.zinv)+SCREEN_WIDTH/2;
     p.y = (f * vLocal.y * p.zinv)+SCREEN_HEIGHT/2;
     p.pos3d = v.position;
