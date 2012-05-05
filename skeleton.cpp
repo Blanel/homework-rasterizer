@@ -104,22 +104,26 @@ void Update()
 	if( keystate[SDLK_UP] )
         {
             //thetaX -= 0.01;
-            camPosition.x -= 0.01;
+            camPosition.z += 0.05;
+            
         }
     
 	if( keystate[SDLK_DOWN] )
         {
-            thetaX += 0.01;
+            //thetaX += 0.01;
+            camPosition.z -= 0.05;
         }
     
 	if( keystate[SDLK_RIGHT] )
         {
             thetaY -= 0.01;
+            camPosition.x += 0.05;
         }
     
 	if( keystate[SDLK_LEFT] )
         {
-            thetaY += 0.01;
+            //thetaY += 0.01;
+            camPosition.x -= 0.05;
         }
     
 	if( keystate[SDLK_RSHIFT] )
@@ -222,7 +226,7 @@ void VertexShader( const Vertex& v, Pixel& p )
 {
     vec3 vLocal = v.position-camPosition;
     
-    vLocal = rot * vLocal;
+    // vLocal = rot * vLocal;
     
     p.zinv = 1/vLocal.z;
     p.x = (f * vLocal.x * p.zinv)+SCREEN_WIDTH/2;
@@ -327,7 +331,6 @@ void DrawRows(
             vector<Pixel> rowPixels(rightPixels[i].x-leftPixels[i].x+1);
             Interpolate(leftPixels[i], rightPixels[i], rowPixels);
             for( int j = 0; j < rowPixels.size(); ++j) {
-                
                 PixelShader(rowPixels[j]);
             }
         }
@@ -350,9 +353,8 @@ void PixelShader( const Pixel& p )
 {
     int x = p.x;
     int y = p.y;
-    if( p.zinv > depthBuffer[y][x] )
+    if( p.zinv > depthBuffer[y][x] && x < SCREEN_WIDTH && x > 0 && y < SCREEN_HEIGHT && y > 0 )
     {
-        
         depthBuffer[y][x] = p.zinv;
         PutPixelSDL( screen, x, y, Light(p)*color);
     }
