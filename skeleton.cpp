@@ -135,13 +135,9 @@ void Update()
 		;
     
 	if( keystate[SDLK_q] )
-		;
-<<<<<<< HEAD
-        
+		;        
     Rotate();
-=======
-        //Rotate();
->>>>>>> 8b60e15e3780d0d68c7f09568de82d3747957c61
+
 }
 void Rotate()
 {
