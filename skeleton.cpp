@@ -112,24 +112,36 @@ void Update()
 		;
     
 	if( keystate[SDLK_w] )
-		;
+        {
+            camPosition += rot*vec3(0,0,0.01);
+        }
     
 	if( keystate[SDLK_s] )
-		;
+        {
+            camPosition += rot*vec3(0,0,0.01);
+        }
     
 	if( keystate[SDLK_d] )
-		;
+        {
+            camPosition += rot*vec3(0.01,0,0);
+        }
     
 	if( keystate[SDLK_a] )
-		;
+        {
+            camPosition -= rot*vec3(0.01,0,0);
+        }
     
 	if( keystate[SDLK_e] )
 		;
     
 	if( keystate[SDLK_q] )
 		;
+<<<<<<< HEAD
         
     Rotate();
+=======
+        //Rotate();
+>>>>>>> 8b60e15e3780d0d68c7f09568de82d3747957c61
 }
 void Rotate()
 {
@@ -177,6 +189,7 @@ void Draw()
 void VertexShader( const vec3& v, Pixel& p )
 {
     vec3 vLocal = v-camPosition;
+    Rotate();
     vLocal = rot * vLocal;
     
     p.zinv = 1/vLocal.z;
