@@ -31,7 +31,7 @@ const int SCREEN_WIDTH = 500;
 SDL_Surface* screen;
 
 // Ticker
-int t;
+// int t;
 
 // World
 vector<Triangle> triangles;
@@ -73,9 +73,8 @@ mat3 Rotate();
 int main( int argc, char* argv[] )
 {
 	LoadTestModel( triangles );
-    Rotate();
 	screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
-	t = SDL_GetTicks();	// Set start value for timer.
+	// t = SDL_GetTicks();	// Set start value for timer.
     
 	while( NoQuitMessageSDL() )
 	{
@@ -89,10 +88,10 @@ int main( int argc, char* argv[] )
 void Update()
 {
 	// Compute frame time:
-	int t2 = SDL_GetTicks();
-	float dt = float(t2-t);
-	t = t2;
-	cout << "Render time: " << dt << " ms." << endl;
+	// int t2 = SDL_GetTicks();
+	// float dt = float(t2-t);
+	// t = t2;
+	// cout << "Render time: " << dt << " ms." << endl;
     
 	Uint8* keystate = SDL_GetKeyState(0);
     
@@ -108,10 +107,10 @@ void Update()
 	if( keystate[SDLK_LEFT] )
             camPosition.x -= 0.05;
     
-	if( keystate[SDLK_RSHIFT] && keystate[SDLK_RIGHT])
+	if( keystate[SDLK_RSHIFT] && keystate[SDLK_LEFT] )
 		yaw += 0.05;
     
-    if( keystate[SDLK_RSHIFT] && keystate[SDLK_LEFT] )
+    if( keystate[SDLK_RSHIFT] && keystate[SDLK_RIGHT])
 		yaw -= 0.05;
     
     // Light movement
@@ -294,7 +293,7 @@ void PixelShader( const Pixel& p )
 {
     int x = p.x;
     int y = p.y;
-    if( p.zinv > depthBuffer[y][x] && x < SCREEN_WIDTH && x >= 0 && y < SCREEN_HEIGHT && y >= 0 )
+    if( x < SCREEN_WIDTH && x >= 0 && y < SCREEN_HEIGHT && y >= 0 && p.zinv > depthBuffer[y][x] )
     {
         depthBuffer[y][x] = p.zinv;
         PutPixelSDL( screen, x, y, Light(p)*color);
