@@ -42,6 +42,7 @@ vec3 currentNormal;
 int f = 250;
 vec3 camPosition(0,0,-2);
 vec3 color;
+float yaw = 0;
 
 // Light
 vec3 lightPos( 0, -0.5, -0.7 );
@@ -51,23 +52,24 @@ vec3 indirectLightPowerPerArea = 0.5f*vec3( 1, 1, 1 );
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
-
+// Headers
 void Update();
 void Draw();
+void DrawPolygon( const vector<Vertex>& vertices );
 void VertexShader( const Vertex& v, Pixel& p );
-void Interpolate( Pixel a, Pixel b, vector<Pixel>& result );
 void ComputePolygonRows(
                         const vector<Pixel>& vertexPixels,
                         vector<Pixel>& leftPixels,
                         vector<Pixel>& rightPixels );
+void Interpolate( Pixel a, Pixel b, vector<Pixel>& result );
 void DrawRows(
               const vector<Pixel>& leftPixels,
               const vector<Pixel>& rightPixels );
-void DrawPolygon( const vector<Vertex>& vertices );
-void Rotate();
 void PixelShader( const Pixel& p );
 vec3 Light( const Pixel& i );
+mat3 Rotate();
 
+// Implementation
 int main( int argc, char* argv[] )
 {
 	LoadTestModel( triangles );
@@ -98,7 +100,7 @@ void Update()
             camPosition.z += 0.05;
     
 	if( keystate[SDLK_DOWN] )
-    camPosition.z -= 0.05;
+        camPosition.z -= 0.05;
     
 	if( keystate[SDLK_RIGHT] )
             camPosition.x += 0.05;
@@ -106,8 +108,11 @@ void Update()
 	if( keystate[SDLK_LEFT] )
             camPosition.x -= 0.05;
     
-	if( keystate[SDLK_RSHIFT] )
-		;
+	if( keystate[SDLK_RSHIFT] && keystate[SDLK_RIGHT])
+		yaw += 0.05;
+    
+    if( keystate[SDLK_RSHIFT] && keystate[SDLK_LEFT] )
+		yaw -= 0.05;
     
     // Light movement
     
@@ -122,24 +127,6 @@ void Update()
 	
 	if( keystate[SDLK_d] )
 		lightPos.x += 0.1;
-    
-	if( keystate[SDLK_e] )
-		;
-    
-	if( keystate[SDLK_q] )
-		;        
-}
-void Rotate()
-{
-    /*rot[0][0] = cos(thetaY)*cos(thetaZ);
-    rot[1][0] = sin(thetaX)*sin(thetaY)*cos(thetaZ)-cos(thetaX)*sin(thetaZ);
-    rot[2][0] = sin(thetaX)*sin(thetaZ)+cos(thetaX)*sin(thetaY)*cos(thetaZ);
-    rot[0][1] = cos(thetaY)*sin(thetaZ);
-    rot[1][1] = cos(thetaX)*cos(thetaZ)+sin(thetaX)*sin(thetaY)*sin(thetaZ);
-    rot[2][1] = cos(thetaX)*sin(thetaY)*sin(thetaZ)-sin(thetaX)*cos(thetaZ);
-    rot[0][2] = -sin(thetaY);
-    rot[1][2] = sin(thetaX)*cos(thetaY);
-    rot[2][2] = cos(thetaX)*cos(thetaY); */
 }
 void Draw()
 {
@@ -174,37 +161,30 @@ void Draw()
     
 	SDL_UpdateRect( screen, 0, 0, 0, 0 );
 }
+void DrawPolygon( const vector<Vertex>& vertices )
+{
+    int V = vertices.size();
+    vector<Pixel> vertexPixels( V );
+    for( int i=0; i<V; ++i )
+        VertexShader( vertices[i], vertexPixels[i] );
+    
+    vector<Pixel> leftPixels;
+    vector<Pixel> rightPixels;
+    
+    ComputePolygonRows( vertexPixels, leftPixels, rightPixels );
+        DrawRows( leftPixels, rightPixels );
+}
 void VertexShader( const Vertex& v, Pixel& p )
 {
     vec3 vLocal = v.position-camPosition;
+    vLocal = vLocal*Rotate();
     
-    p.zinv = 1/abs(vLocal.z);
+    p.zinv = 1/vLocal.z;
     p.x = (f * vLocal.x * p.zinv)+SCREEN_WIDTH/2;
     p.y = (f * vLocal.y * p.zinv)+SCREEN_HEIGHT/2;
     p.pos3d = v.position;
     
     
-}
-void Interpolate( Pixel a, Pixel b, vector<Pixel>& result )
-{
-    int N = result.size();
-    vec3 diff = vec3(b.x-a.x,b.y-a.y,b.zinv-a.zinv) / float(max(N-1,1));
-    vec3 diffPos = vec3(b.pos3d*b.zinv - a.pos3d*a.zinv) / float(max(N-1,1));
-    
-    vec3 current( a.x, a.y, a.zinv);
-    vec3 currentPos(a.pos3d*a.zinv);
-    for( int i=0; i<N; ++i )
-    {
-        result[i].x = current.x;
-        result[i].y = current.y;
-        result[i].zinv = current.z;
-        result[i].pos3d = currentPos/current.z;
-                
-        current.x += diff.x;
-        current.y += diff.y;
-        current.z += diff.z;
-        currentPos += diffPos;
-    }
 }
 void ComputePolygonRows(
                         const vector<Pixel>& vertexPixels,
@@ -272,6 +252,29 @@ void ComputePolygonRows(
         }
     }
 }
+void Interpolate( Pixel a, Pixel b, vector<Pixel>& result )
+{
+    int N = result.size();
+    vec3 diff = vec3(b.x-a.x,b.y-a.y,b.zinv-a.zinv) / float(max(N-1,1));
+    vec3 diffPos = vec3(b.pos3d*b.zinv - a.pos3d*a.zinv) / float(max(N-1,1));
+    
+    vec3 current( a.x, a.y, a.zinv);
+    vec3 currentPos(a.pos3d*a.zinv);
+    
+    for( int i=0; i<N; ++i )
+    {
+        result[i].x = current.x;
+        result[i].y = current.y;
+        result[i].zinv = current.z;
+        result[i].pos3d = currentPos/current.z;
+                
+        current.x += diff.x;
+        current.y += diff.y;
+        current.z += diff.z;
+        currentPos += diffPos;
+    }
+}
+
 void DrawRows(
               const vector<Pixel>& leftPixels,
               const vector<Pixel>& rightPixels )
@@ -286,30 +289,19 @@ void DrawRows(
         }
     }
 }
-void DrawPolygon( const vector<Vertex>& vertices )
-{
-    int V = vertices.size();
-    vector<Pixel> vertexPixels( V );
-    for( int i=0; i<V; ++i )
-        VertexShader( vertices[i], vertexPixels[i] );
-    
-    vector<Pixel> leftPixels;
-    vector<Pixel> rightPixels;
-    
-    ComputePolygonRows( vertexPixels, leftPixels, rightPixels );
-    DrawRows( leftPixels, rightPixels );
-}
+
 void PixelShader( const Pixel& p )
 {
     int x = p.x;
     int y = p.y;
-    if( p.zinv > depthBuffer[y][x] && x < SCREEN_WIDTH && x > 0 && y < SCREEN_HEIGHT && y > 0 )
+    if( p.zinv > depthBuffer[y][x] && x < SCREEN_WIDTH && x >= 0 && y < SCREEN_HEIGHT && y >= 0 )
     {
         depthBuffer[y][x] = p.zinv;
         PutPixelSDL( screen, x, y, Light(p)*color);
     }
 }
-vec3 Light( const Pixel& i ){
+vec3 Light( const Pixel& i )
+{
     
     vec3 r = lightPos - i.pos3d ;
     vec3 rHat = glm::normalize(r);
@@ -324,4 +316,11 @@ vec3 Light( const Pixel& i ){
     vec3 D = B*ratio;
     
     return D+indirectLightPowerPerArea;
+}
+mat3 Rotate()
+{
+    vec3 xCol( cos(yaw), 0, sin(yaw) );
+    vec3 yCol(0, 1, 0);
+    vec3 zCol( -sin(yaw), 0, cos(yaw) );
+    return mat3( xCol, yCol, zCol);
 }
