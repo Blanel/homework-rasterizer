@@ -78,7 +78,6 @@ void Rotate();
 // Implementation
 int main( int argc, char* argv[] )
 {
-
         LoadTestModel( triangles );
         Rotate();
         screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
@@ -88,7 +87,7 @@ int main( int argc, char* argv[] )
         {
                 Update();
                 Draw();
-    }
+        }
 
         SDL_SaveBMP( screen, "screenshot.bmp" );
         return 0;
@@ -153,12 +152,10 @@ void Update()
 
         if( keystate[SDLK_RCTRL] )
                 ;
-
     // Light movement
 
     if( keystate[SDLK_w] )
                lightPos.z += 0.1;
-
         if( keystate[SDLK_s] )
                 lightPos.z -= 0.1;
 
@@ -239,9 +236,7 @@ void VertexShader( const Vertex& v, Pixel& p )
 {
     vec3 vLocal = v.position-camPosition;
 
-
     vLocal = vLocal*rot;
-
     p.zinv = 1/vLocal.z;
     p.x = (f * vLocal.x * p.zinv)+SCREEN_WIDTH/2;
     p.y = (f * vLocal.y * p.zinv)+SCREEN_HEIGHT/2;
@@ -249,6 +244,8 @@ void VertexShader( const Vertex& v, Pixel& p )
 
 
 }
+
+
 void ComputePolygonRows(
                         const vector<Pixel>& vertexPixels,
                         vector<Pixel>& leftPixels,
@@ -357,7 +354,6 @@ void PixelShader( const Pixel& p )
 {
     int x = p.x;
     int y = p.y;
-
     if( x < SCREEN_WIDTH && x >= 0 && y < SCREEN_HEIGHT && y >= 0 && p.zinv > depthBuffer[y][x] )
     {
         depthBuffer[y][x] = p.zinv;
@@ -367,7 +363,6 @@ void PixelShader( const Pixel& p )
 
 vec3 Light( const Pixel& i )
 {
-
     vec3 r = lightPos - i.pos3d ;
     vec3 rHat = glm::normalize(r);
 
@@ -382,4 +377,3 @@ vec3 Light( const Pixel& i )
 
     return D+indirectLightPowerPerArea;
 }
-
