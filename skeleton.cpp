@@ -54,8 +54,6 @@ mat3 rot;
 float thetaX = 0;
 float thetaY = 0;
 float thetaZ = 0;
-
-bool DEBUG=false;
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
@@ -130,7 +128,6 @@ void Update()
         if( keystate[SDLK_UP] )
         {
             thetaX-=0.01;
-            //DEBUG=true;
 
         }
 
@@ -155,25 +152,6 @@ void Update()
         if( keystate[SDLK_RCTRL] )
                 ;
 
-        /*if( keystate[SDLK_w] )
-        {
-            camPosition += rot*vec3(0,0,0.01);
-        }
-
-        if( keystate[SDLK_s] )
-        {
-            camPosition += rot*vec3(0,0,0.01);
-        }
-
-        if( keystate[SDLK_d] )
-        {
-            camPosition += rot*vec3(0.01,0,0);
-        }
-
-        if( keystate[SDLK_a] )
-        {
-            camPosition -= rot*vec3(0.01,0,0);
-        } */
     // Light movement
 
     if( keystate[SDLK_w] )
@@ -194,7 +172,6 @@ void Update()
         if( keystate[SDLK_q] )
                 ;
 
-        cout<<"\ncam: "<<camPosition.x<<" "<<camPosition.y<<" "<<camPosition.z<<" "<<thetaX<<" "<<thetaY<<" "<<thetaZ;
     Rotate();
 
 }
@@ -377,14 +354,7 @@ void PixelShader( const Pixel& p )
 {
     int x = p.x;
     int y = p.y;
-    if(DEBUG)
-    {
-    cout<<"\nx: "<<x;
-    cout<<"y: "<<y;
-    cout<<"zinv: "<<p.zinv;
-    cout<<"dephthBuffer: "<<depthBuffer[y][x];
-    }
-    if( p.zinv > depthBuffer[y][x] && x < SCREEN_WIDTH && x > 0 && y < SCREEN_HEIGHT && y > 0 )
+    if( x < SCREEN_WIDTH && x > 0 && y < SCREEN_HEIGHT && y > 0 && p.zinv > depthBuffer[y][x])
     {
         depthBuffer[y][x] = p.zinv;
         PutPixelSDL( screen, x, y, Light(p)*color);
